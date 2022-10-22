@@ -11,7 +11,7 @@ EXES := $(foreach k, $(K_VALUES), $(foreach test, $(TESTS), $(BUILD_DIR)/$(test)
 
 executables: $(EXES)
 
-$(BUILD_DIR)/%.heapsort.c: $(TEST_FILE_DIR)/%.txt $(BUILD_DIR)
+$(BUILD_DIR)/%.heapsort.c: $(TEST_FILE_DIR)/%.txt $(BUILD_DIR) $(MAIN_C_FILE)
 	echo -n "" > $@ 
 	echo -n "int a[] = {" >> $@
 	sed -e 's/.*/0x&,/' $< | sed ':a;N;$$!ba;s/\n/ /g' | sed '$$s/.$$//' >> $@
