@@ -1,7 +1,10 @@
+#define K 8
+#define REPETITIONS 1
+int a[] = {4, 65, 2, -31, 0, 99, 2, 83, 782, 1};
+
+
 // based on https://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C
 #include <stdio.h>
-
-#define K 8
 
 int max (int *a, int n, int parent) {
     int smallest = parent;
@@ -36,17 +39,11 @@ void heapsort (int *a, int n) {
 }
 
 int main () {
-    int a[] = {4, 65, 2, -31, 0, 99, 2, 83, 782, 1};
     int n = sizeof a / sizeof a[0];
     int i;
 
-    for (i = 0; i < n; i++)
-        printf("%d%s", a[i], i == n - 1 ? "\n" : " ");
+    for (i = 0; i < REPETITIONS; i++)
+        heapsort(a, n);
 
-    heapsort(a, n);
-
-    for (i = 0; i < n; i++)
-        printf("%d%s", a[i], i == n - 1 ? "\n" : " ");
-        
     return 0;
 }
