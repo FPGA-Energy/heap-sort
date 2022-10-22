@@ -1,10 +1,7 @@
 
-
 BUILD_DIR := build
 TEST_FILE_DIR := src/test-files
 MAIN_C_FILE := src/main/c/heap.c
-
-REPETITIONS := 10
 
 TEST_FILES := $(wildcard $(TEST_FILE_DIR)/*)
 TESTS := $(basename $(notdir $(TEST_FILES)))
@@ -19,7 +16,7 @@ $(BUILD_DIR)/%.heapsort.c: $(TEST_FILE_DIR)/%.txt $(BUILD_DIR)
 	echo -n "int a[] = {" >> $@
 	sed -e 's/.*/0x&,/' $< | sed ':a;N;$$!ba;s/\n/ /g' | sed '$$s/.$$//' >> $@
 	echo -n "};" >> $@
-	tail -n 46 $(MAIN_C_FILE) >> $@
+	tail -n 44 $(MAIN_C_FILE) >> $@
 
 $(BUILD_DIR):
 	mkdir build
@@ -28,8 +25,8 @@ clean:
 	rm -r build
 
 define exe
-$(BUILD_DIR)/$(test)_$(k).heapsort.out: $(BUILD_DIR)/$(test).heapsort.c
-	gcc -o $(BUILD_DIR)/$(test)_$(k).heapsort.out $(BUILD_DIR)/$(test).heapsort.c -DK=$(k) -DREPETITIONS=$(REPETITIONS)
+$(BUILD_DIR)/$(test)_$(k).heapsort.out: $(BUILD_DIR)/$(test).heapsort.c $(MAKEFILE)
+	gcc -O3 -o $(BUILD_DIR)/$(test)_$(k).heapsort.out $(BUILD_DIR)/$(test).heapsort.c -DK=$(k)
 endef
 
 $(foreach k,$(K_VALUES), $(foreach test,$(TESTS), $(eval $(exe))))

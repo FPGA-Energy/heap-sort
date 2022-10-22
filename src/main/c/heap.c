@@ -1,5 +1,4 @@
 #define K 8
-#define REPETITIONS 1
 int a[] = {4, 65, 2, -31, 0, 99, 2, 83, 782, 1};
 
 
@@ -42,8 +41,7 @@ int main () {
     int n = sizeof a / sizeof a[0];
     int i;
 
-    for (i = 0; i < REPETITIONS; i++)
-        heapsort(a, n);
+    heapsort(a, n);
 
     return 0;
 }
