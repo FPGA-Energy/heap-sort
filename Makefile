@@ -6,6 +6,9 @@ MAIN_C_FILE := src/main/c/heap.c
 TEST_FILES := $(wildcard $(TEST_FILE_DIR)/*K-sorted.txt)
 TESTS := $(basename $(notdir $(TEST_FILES)))
 K_VALUES := 2 4 8 16 32 64
+
+
+C_REPETITIONS := 100
 C_FILES := $(foreach test, $(TESTS), $(BUILD_DIR)/c_files/$(test).heapsort.c)
 EXES := $(foreach k, $(K_VALUES), $(foreach test, $(TESTS), $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out))
 
@@ -26,11 +29,12 @@ verilog: $(VERILOG_FILES)
 bitstreams: $(BIT_STREAMS)
 
 $(BUILD_DIR)/c_files/%.heapsort.c: $(TEST_FILE_DIR)/%.txt $(BUILD_DIR) $(MAIN_C_FILE)
-	echo -n "" > $@ 
-	echo -n "int a[] = {" >> $@
+	@mkdir -p $(BUILD_DIR)/c_files
+	@echo -n "" > $@
+	@echo -n "int a[] = {" >> $@
 	sed -e 's/.*/0x&,/' $< | sed ':a;N;$$!ba;s/\n/ /g' | sed '$$s/.$$//' >> $@
-	echo -n "};" >> $@
-	tail -n 44 $(MAIN_C_FILE) >> $@
+	@echo -n "};" >> $@
+	tail -n 45 $(MAIN_C_FILE) >> $@
 
 $(BUILD_DIR):
 	mkdir build
@@ -41,7 +45,8 @@ clean:
 
 define exe
 $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out: $(BUILD_DIR)/c_files/$(test).heapsort.c $(MAKEFILE)
-	gcc -O3 -o $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out $(BUILD_DIR)/c_files/$(test).heapsort.c -DK=$(k)
+	@mkdir -p $(BUILD_DIR)/executables
+	gcc -O3 -o $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out $(BUILD_DIR)/c_files/$(test).heapsort.c -DK=$(k) -DREPETITIONS=$(C_REPETITIONS)
 endef
 
 $(foreach k,$(K_VALUES), $(foreach test,$(TESTS), $(eval $(exe))))
