@@ -1,6 +1,6 @@
-import Top.State
-import util.{nextPow2, falling, rising}
-import util.Delay
+import HeapSort.State
+import util.{falling, nextPow2, rising}
+import util.Xilinx._
 import chisel3._
 import chisel3.util._
 import firrtl.annotations.MemoryArrayInitAnnotation
@@ -9,26 +9,27 @@ import chisel3.experimental.{ChiselAnnotation, ChiselEnum, annotate}
 import scala.io.Source
 
 
-class Top(params: Heap.Parameters, init: Seq[BigInt], lowCycles: Int = 500, highCycles: Int = 15) extends Module {
+class HeapSort(params: Heap.Parameters, init: Seq[BigInt], lowCycles: Int = 500, highCycles: Int = 15, frequency: Double) extends Module {
   import params._
 
   val io = IO(new Bundle {
-    val leds = Output(UInt(4.W))
-    val rgb = Output(Bool())
+    val leds = Output(UInt(2.W))
+    val rgb = Output(UInt(3.W))
   })
 
-  withReset(!reset.asBool) {
 
-    val memory = SyncReadMem(init.length, UInt(w.W))
+  withClock(MMCME2_ADV(clock,reset, 12.0 -> frequency)) {
+
+    val memory = SyncReadMem(16384, UInt(w.W))
 
     annotate(new ChiselAnnotation {
-      override def toFirrtl = MemoryArrayInitAnnotation(memory.toTarget, init)
+      override def toFirrtl = MemoryArrayInitAnnotation(memory.toTarget, init.padTo(16384, BigInt(0)))
     })
 
     val heap = Module(new Heap(params))
 
     val stateReg = RegInit(State.Setup)
-    val pointerReg = RegInit(0.U(log2Ceil(init.length + 1).W))
+    val pointerReg = RegInit(0.U(log2Ceil(16384 + 1).W))
 
     val memOut = memory.read(pointerReg)
 
@@ -44,14 +45,8 @@ class Top(params: Heap.Parameters, init: Seq[BigInt], lowCycles: Int = 500, high
     val runCounter = RegInit(0.U(log2Ceil(lowCycles).W))
     val blinkReg = RegInit(0.B)
 
-    val rgbController = Module(new LedController(50000000))
-    io.leds := blinkReg
-    rgbController.io.colors.foreach { c =>
-      c.r := 0.U
-      c.g := 0.U
-      c.b := 0.U
-    }
-    io.rgb := rgbController.io.out
+    io.leds := Fill(2, blinkReg)
+    io.rgb := Fill(3, !blinkReg)
 
     switch(stateReg) {
       is(State.Setup) {
@@ -95,43 +90,41 @@ class Top(params: Heap.Parameters, init: Seq[BigInt], lowCycles: Int = 500, high
 
     }
   }
+
 }
 
-object Top {
+object HeapSort {
 
   object State extends ChiselEnum {
     val Setup, IssueInsert, WaitInsert, IssueRemove, WaitRemove, Done = Value
   }
 
   def main(args: Array[String]) = {
-    val k = if(args.contains("-k")) args(args.indexOf("-k") + 1).toInt else 4
+
+    val defaultK = 4
+    val defaultTestFile = "src/test-files/16K-sorted.txt"
+
+    val k = if(args.contains("-k")) args(args.indexOf("-k") + 1).toInt else defaultK
     val w = if(args.contains("-w")) args(args.indexOf("-w") + 1).toInt else 32
     val targetDir = if(args.contains("--target-dir")) args(args.indexOf("--target-dir") + 1) else "build"
-    val testSeq = if(args.contains("--test-file")) {
-      val testFile = args(args.indexOf("--test-file") + 1)
+    val testSeq = {
+      val testFile = if(args.contains("--test-file")) args(args.indexOf("--test-file") + 1) else defaultTestFile
       val source = Source.fromFile(testFile)
       source.getLines().map(BigInt(_, 16)).toArray
-    } else {
-      Array.fill(4096)(BigInt(w,scala.util.Random))
     }
-    println("Initial: %8x - %32s".format(testSeq.head, testSeq.head.toString(2)))
-    println("Min:     %8x - %32s".format(testSeq.min, testSeq.min.toString(2)))
-    emitVerilog(new Top(Heap.Parameters(nextPow2(testSeq.length), k, w), testSeq), Array("--target-dir",targetDir))
+
+    val frequencies = Map(
+      2 -> 140,
+      4 -> 140,
+      8 -> 140,
+      16 -> 138,
+      32 -> 138,
+      64 -> 125
+    )
+    val lowCycles = 500
+    val highCycles = 15
+
+    emitVerilog(new HeapSort(Heap.Parameters(16384, k, w), testSeq.padTo(16384, BigInt(0)), lowCycles, highCycles, frequencies(k)), Array("--target-dir",targetDir))
   }
-
-}
-
-object ManualSetup extends App {
-
-  val testFile = "4K-sorted.txt"
-  val k = 2
-  val w = 32
-  val lowCycles = 500
-  val highCycles = 15
-
-  val source = Source.fromFile(testFile)
-  val testSeq = source.getLines().map(BigInt(_, 16)).toArray
-
-  emitVerilog(new Top(Heap.Parameters(nextPow2(testSeq.length), k, w), testSeq, lowCycles, highCycles), Array("--target-dir","build"))
 
 }

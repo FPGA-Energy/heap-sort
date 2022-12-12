@@ -1,6 +1,6 @@
 
+import util._
 import MaxFinder.ParentWrapper
-import util.{Delay, Indexed}
 import chisel3._
 import chisel3.util._
 
