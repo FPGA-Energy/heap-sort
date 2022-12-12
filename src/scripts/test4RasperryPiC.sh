@@ -3,9 +3,7 @@
 # only real time
 TIMEFORMAT=%R
 LOGFILE="results/runtime.log"
-REP1=40
-REP2=40
-REP3=20
+REP1=400
 
   benchcmd() {
 
@@ -25,23 +23,16 @@ REP3=20
 	do 
 		echo $file 
 		echo "[$(date)]" >> $LOGFILE
+	
 		for  (( j1=1; j1<=$REP1; j1++ ))
 		do	
 			echo "$j1; "
-
-			for (( j2=1; j2<=$REP2; j2++ ))
-			do	
-				for (( i=1; i<=$REP3; i++ ))
-				do
-					echo "$j1*$j2*$i; " >> $LOGFILE
+					echo "$j1; " >> $LOGFILE
 					benchcmd $file 
-
-				done
-			done
-
 		done
+
 		echo "[$(date)]" >> $LOGFILE
-		#sleep 20
+		sleep 5
 
 	done
 
@@ -53,9 +44,9 @@ rm -f $LOGFILE
 pwd >> $LOGFILE
 echo "[$(date)]" >> $LOGFILE
 
-run_files "build/*K-random_*.heapsort.out"
+#run_files "build/*K-random_*.heapsort.out" "results/runtime_random.log"
 run_files "build/*K-sorted_*.heapsort.out"
-run_files "build/*K-reverse-sorted_*.heapsort.out"
+#run_files "build/*K-reverse-sorted_*.heapsort.out" "results/runtime_revSorted.log"
 
 
 echo "done"
