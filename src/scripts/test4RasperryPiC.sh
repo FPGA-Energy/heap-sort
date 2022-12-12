@@ -1,53 +1,62 @@
-#!/bin/bash
+	#!/bin/bash
 
-# only real time
-TIMEFORMAT=%R
-LOGFILE="results/runtime.log"
-REP1=400
+	# only real time
+	TIMEFORMAT=%R
+	LOGFILE="results/runtime.log"
+	REP1=40
+	REP2=40
+	REP3=20
 
-  benchcmd() {
+	benchcmd() {
 
-		echo "$@;"  >> $LOGFILE
-		T="$(date +%s%N)"
-		eval "$@"
-		T="$(($(date +%s%N)-T))"
-		T=$((T/1000000))
-		echo "${T};::" >> $LOGFILE
-		#sleep 1
+			echo "$@;"  >> $LOGFILE
+			T="$(date +%s%N)"
+			eval "$@"
+			T="$(($(date +%s%N)-T))"
+			T=$((T/1000000))
+			echo "${T};::" >> $LOGFILE
+			#sleep 1
 
-  }
+	}
 
-  run_files() {
+	run_files() {
 
-	for file in $1
-	do 
-		echo $file 
-		echo "[$(date)]" >> $LOGFILE
-	
-		for  (( j1=1; j1<=$REP1; j1++ ))
-		do	
-			echo "$j1; "
-					echo "$j1; " >> $LOGFILE
-					benchcmd $file 
+		for file in $1
+		do 
+			echo $file 
+			echo "[$(date)]" >> $LOGFILE		
+			for j1 in 1 2 3 4 5 6 7 8 9 10
+			do	
+				echo "$j1; "
+
+				for j2 in 1 2 3 4 5 6 7 8 9 10
+				do	
+					for i in 1 2 3 4 5 6 7 8 9 10
+					do
+						echo "$j1*$j2*$i; " >> $LOGFILE
+						benchcmd $file 
+
+					done
+				done
+
+			done
+			echo "[$(date)]" >> $LOGFILE
+			#sleep 20
+
 		done
 
-		echo "[$(date)]" >> $LOGFILE
-		sleep 5
-
-	done
-
-  }
+	}
 
 
-rm -f $LOGFILE
+	rm -f $LOGFILE
 
-pwd >> $LOGFILE
-echo "[$(date)]" >> $LOGFILE
+	pwd >> $LOGFILE
+	echo "[$(date)]" >> $LOGFILE
 
-#run_files "build/*K-random_*.heapsort.out" "results/runtime_random.log"
-run_files "build/*K-sorted_*.heapsort.out"
-#run_files "build/*K-reverse-sorted_*.heapsort.out" "results/runtime_revSorted.log"
+	run_files "build/*K-random_*.heapsort.out"
+	run_files "build/*K-sorted_*.heapsort.out"
+	run_files "build/*K-reverse-sorted_*.heapsort.out"
 
 
-echo "done"
-cat $LOGFILE
+	echo "done"
+	cat $LOGFILE
