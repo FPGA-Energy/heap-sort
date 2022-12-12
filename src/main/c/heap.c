@@ -3,14 +3,15 @@ int a[] = {4, 65, 2, -31, 0, 99, 2, 83, 782, 1};
 
 
 // based on https://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C
+
 #include <stdio.h>
 
 int max (int *a, int n, int parent) {
-    int smallest = parent;
+    int largest = parent;
     for(int child = (K * parent) + 1; child < (K * parent) + K + 1; child++) 
-        if(child < n && a[child] < a[smallest]) smallest = child;
+        if(child < n && a[child] > a[largest]) largest = child;
 
-    return smallest;
+    return largest;
 }
 
 void downheap (int *a, int n, int i) {
@@ -39,9 +40,11 @@ void heapsort (int *a, int n) {
 
 int main () {
     int n = sizeof a / sizeof a[0];
-    int i;
 
-    heapsort(a, n);
+    for (int i = 0; i < REPETITIONS; i++) {
+        for (int j = 0; j < n; j++) a[j] = j;
+        heapsort(a, n);
+    }
 
     return 0;
 }
