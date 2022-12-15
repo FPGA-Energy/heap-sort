@@ -31,7 +31,7 @@
 
 				for j2 in 1 2 3 4 5 6 7 8 9 10
 				do	
-					for i in 1 2 3 4 5 6 7 8 9 10
+					for i in 1 2 3 4
 					do
 						echo "$j1*$j2*$i; " >> $LOGFILE
 						benchcmd $file 
@@ -53,9 +53,9 @@
 	pwd >> $LOGFILE
 	echo "[$(date)]" >> $LOGFILE
 
-	run_files "build/*K-random_*.heapsort.out"
-	run_files "build/*K-sorted_*.heapsort.out"
-	run_files "build/*K-reverse-sorted_*.heapsort.out"
+	#run_files "build/*K-random_*.heapsort.out"
+	run_files "build/executables*K-sorted_*.heapsort.out"
+	#run_files "build/*K-reverse-sorted_*.heapsort.out"
 
 
 	echo "done"
