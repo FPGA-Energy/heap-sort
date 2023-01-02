@@ -1,5 +1,4 @@
-#define K 8
-int a[] = {4, 65, 2, -31, 0, 99, 2, 83, 782, 1};
+int a[N];
 
 
 // based on https://rosettacode.org/wiki/Sorting_algorithms/Heapsort#C
@@ -39,11 +38,10 @@ void heapsort (int *a, int n) {
 }
 
 int main () {
-    int n = sizeof a / sizeof a[0];
 
     for (int i = 0; i < REPETITIONS; i++) {
-        for (int j = 0; j < n; j++) a[j] = j;
-        heapsort(a, n);
+        for (int j = 0; j < N; j++) a[j] = j;
+        heapsort(a, N);
     }
 
     return 0;

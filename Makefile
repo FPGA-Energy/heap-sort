@@ -5,15 +5,15 @@ MAIN_C_FILE := src/main/c/heap.c
 
 TEST_FILES := $(wildcard $(TEST_FILE_DIR)/*K-sorted.txt)
 TESTS := $(basename $(notdir $(TEST_FILES)))
+INDECES :=  1 2 3 4 5 6 7
+SIZES := 4096 6144 8192 10240 12288 14336 16384
 K_VALUES := 2 4 8 16 32 64
 
 
 C_REPETITIONS := 100
-C_FILES := $(foreach test, $(TESTS), $(BUILD_DIR)/c_files/$(test).heapsort.c)
-EXES := $(foreach k, $(K_VALUES), $(foreach test, $(TESTS), $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out))
+EXES := $(foreach k, $(K_VALUES), $(foreach idx, $(INDECES), $(BUILD_DIR)/executables/N$(word ${idx}, ${SIZES})_K$(k).heapsort.out))
 
-
-TOP=HeapSort
+TOP=Artix7Top
 PART = xc7a35tcpg236-1
 CONFIG_PART = xc7a35t_0
 VIVADO_ARGS = -nojournal
@@ -28,14 +28,6 @@ executables: $(EXES)
 verilog: $(VERILOG_FILES)
 bitstreams: $(BIT_STREAMS)
 
-$(BUILD_DIR)/c_files/%.heapsort.c: $(TEST_FILE_DIR)/%.txt $(BUILD_DIR) $(MAIN_C_FILE)
-	@mkdir -p $(BUILD_DIR)/c_files
-	@echo -n "" > $@
-	@echo -n "int a[] = {" >> $@
-	sed -e 's/.*/0x&,/' $< | sed ':a;N;$$!ba;s/\n/ /g' | sed '$$s/.$$//' >> $@
-	@echo -n "};" >> $@
-	tail -n 45 $(MAIN_C_FILE) >> $@
-
 $(BUILD_DIR):
 	mkdir build
 	mkdir build/c_files build/executables build/verilog build/bitstreams
@@ -44,12 +36,12 @@ clean:
 	rm -r build
 
 define exe
-$(BUILD_DIR)/executables/$(test)_$(k).heapsort.out: $(BUILD_DIR)/c_files/$(test).heapsort.c $(MAKEFILE)
+$(BUILD_DIR)/executables/N$(word ${idx}, ${SIZES})_K$(k).heapsort.out: $(MAKEFILE)
 	@mkdir -p $(BUILD_DIR)/executables
-	gcc -O3 -o $(BUILD_DIR)/executables/$(test)_$(k).heapsort.out $(BUILD_DIR)/c_files/$(test).heapsort.c -DK=$(k) -DREPETITIONS=$(C_REPETITIONS)
+	gcc -O3 -o $(BUILD_DIR)/executables/N$(word ${idx}, ${SIZES})_K$(k).heapsort.out src/main/c/heap.c -DK=$(k) -DREPETITIONS=$(C_REPETITIONS) -DN=$(word ${idx}, ${SIZES})
 endef
 
-$(foreach k,$(K_VALUES), $(foreach test,$(TESTS), $(eval $(exe))))
+$(foreach k,$(K_VALUES), $(foreach idx,$(INDECES), $(eval $(exe))))
 
 
 define verilog_gen
