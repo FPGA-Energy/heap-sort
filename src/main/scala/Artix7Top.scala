@@ -5,16 +5,18 @@ import chisel3.util._
 
 import scala.io.Source
 
-class Artix7Top(params: Heap.Parameters, init: Seq[BigInt], frequency: Double) extends Module {
+class Artix7Top(params: Heap.Parameters, init: Seq[BigInt], frequency: Double)(lowCycles: Int, highCycles: Int) extends Module {
 
   val io = IO(new Bundle {
     val leds = Output(UInt(2.W))
     val rgb = Output(UInt(3.W))
   })
 
+  println(lowCycles -> highCycles)
+
   withClock(MMCME2_ADV(clock,reset, 12.0 -> frequency)) {
 
-    val experiment = Module(new ExperimentTop(params, init))
+    val experiment = Module(new ExperimentTop(params, init)(lowCycles, highCycles))
     io.leds := Fill(3, experiment.io.blink)
     io.rgb := Fill(3, !experiment.io.blink)
 
@@ -23,8 +25,8 @@ class Artix7Top(params: Heap.Parameters, init: Seq[BigInt], frequency: Double) e
 }
 
 object Artix7Top extends App {
-  val defaultK = 4
-  val defaultTestFile = "src/test-files/16K-sorted.txt"
+  val defaultK = 64
+  val defaultTestFile = "src/test-files/4K-sorted.txt"
 
   val k = if (args.contains("-k")) args(args.indexOf("-k") + 1).toInt else defaultK
   val w = if (args.contains("-w")) args(args.indexOf("-w") + 1).toInt else 32
@@ -45,5 +47,19 @@ object Artix7Top extends App {
     64 -> 125
   )
 
-  emitVerilog(new Artix7Top(Heap.Parameters(16384, k, w), testSeq.padTo(16384, BigInt(0)), frequencies(k)), Array("--target-dir", targetDir))
+  def fun(repsPerSec: Int) = Seq.tabulate(7) { i =>
+    val n = 4096 + i*2048
+    n -> ((repsPerSec * 5 * (4096f/n)).toInt, (repsPerSec * (4096f/n)).toInt)
+  }.toMap
+
+  val (lowCycles, highCycles) = Map(
+    2 -> fun(125),
+    4 -> fun(200),
+    8 -> fun(250),
+    16 -> fun(310),
+    32 -> fun(340),
+    64 -> fun(360)
+  ).apply(k).apply(testSeq.length)
+
+  emitVerilog(new Artix7Top(Heap.Parameters(16384, k, w), testSeq, frequencies(k))(lowCycles, highCycles), Array("--target-dir", targetDir))
 }

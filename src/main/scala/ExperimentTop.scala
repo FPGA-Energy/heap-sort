@@ -3,11 +3,7 @@ import util.Xilinx.MMCME2_ADV
 import chisel3._
 import chisel3.util.{Fill, log2Ceil}
 
-class ExperimentTop(params: Heap.Parameters, init: Seq[BigInt]) extends Module {
-
-  val lowCycles = 500
-  val highCycles = 15
-
+class ExperimentTop(params: Heap.Parameters, init: Seq[BigInt])(lowCycles: Int, highCycles: Int) extends Module {
 
   val io = IO(new Bundle {
     val blink = Output(Bool())

@@ -70,7 +70,7 @@ $(BUILD_DIR)/$(test)_$(k)/synth.tcl: $(MAKEFILE) | $(BUILD_DIR)
     opt_design\n\
     place_design\n\
     route_design\n\
-    write_bitstream $(BUILD_DIR)/bitstreams/$(test)_$(k).heapsort.bit -force" > $(BUILD_DIR)/$(test)_$(k)/synth.tcl
+    write_bitstream $(BUILD_DIR)/bitstreams/$(test)_$(k).heapsort.bit -force -bin_file" > $(BUILD_DIR)/$(test)_$(k)/synth.tcl
 endef
 
 $(foreach k,$(K_VALUES), $(foreach test,$(TESTS), $(eval $(synth_tcl_gen))))
