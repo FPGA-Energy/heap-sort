@@ -10,7 +10,7 @@ SIZES := 4096 6144 8192 10240 12288 14336 16384
 K_VALUES := 2 4 8 16 32 64
 
 
-C_REPETITIONS := 2000
+C_REPETITIONS := 3000
 EXES := $(foreach k, $(K_VALUES), $(foreach idx, $(INDECES), $(BUILD_DIR)/executables/N$(word ${idx}, ${SIZES})_K$(k).heapsort.out))
 
 TOP=Artix7Top
