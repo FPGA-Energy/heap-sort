@@ -16,7 +16,7 @@
 			T=$((T/1000000))
 			echo "$@;${T};" >> $LOGFILE
 			echo "$@;${T};"
-			sleep 5
+			#sleep 5
 
 	}
 
@@ -42,7 +42,7 @@
 
 			done
 			#echo "[$(date)]" >> $LOGFILE
-			sleep 10
+			#sleep 10
 
 		done
 
