@@ -25,8 +25,8 @@ class Artix7Top(params: Heap.Parameters, init: Seq[BigInt], frequency: Double)(l
 }
 
 object Artix7Top extends App {
-  val defaultK = 64
-  val defaultTestFile = "src/test-files/4K-sorted.txt"
+  val defaultK = 2
+  val defaultTestFile = "src/test-files/10K-sorted.txt"
 
   val k = if (args.contains("-k")) args(args.indexOf("-k") + 1).toInt else defaultK
   val w = if (args.contains("-w")) args(args.indexOf("-w") + 1).toInt else 32
@@ -52,14 +52,21 @@ object Artix7Top extends App {
     n -> ((repsPerSec * 5 * (4096f/n)).toInt, (repsPerSec * (4096f/n)).toInt)
   }.toMap
 
-  val (lowCycles, highCycles) = Map(
+  val lowHighs = Map(
     2 -> fun(125),
     4 -> fun(200),
     8 -> fun(250),
     16 -> fun(310),
     32 -> fun(340),
     64 -> fun(360)
-  ).apply(k).apply(testSeq.length)
+  )
+
+  println("k, n, low, high, frequency")
+  println(lowHighs.flatMap { case (k, map) =>
+    map.map { case (n, (low, high)) => s"$k, $n, $low, $high, ${frequencies(k)*1000000}" }
+  }.mkString("\n"))
+
+  val (lowCycles, highCycles) = lowHighs.apply(k).apply(testSeq.length)
 
   emitVerilog(new Artix7Top(Heap.Parameters(16384, k, w), testSeq, frequencies(k))(lowCycles, highCycles), Array("--target-dir", targetDir))
 }
